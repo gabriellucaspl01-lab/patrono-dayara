@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mensagem Especial</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+html,body{
+    width:100%;
+    height:100%;
+    font-family:'Segoe UI',sans-serif;
+    background:#05070c;
+    color:#fff;
+    overflow:hidden;
+}
+
+/* FUNDO CINEMATOGRÁFICO */
+body{
+    background:
+        radial-gradient(circle at 50% 30%, #0e1a33, #05070c 70%);
+}
+
+/* PARTÍCULAS (ESTRELAS) */
+canvas#stars{
+    position:fixed;
+    inset:0;
+    z-index:0;
+}
+
+/* NEVOA */
+body::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 20% 40%, rgba(120,160,255,.08), transparent 60%),
+        radial-gradient(circle at 80% 60%, rgba(120,160,255,.05), transparent 65%);
+    animation:fog 18s ease-in-out infinite alternate;
+    pointer-events:none;
+    z-index:1;
+}
+
+@keyframes fog{
+    from{transform:translateX(-30px)}
+    to{transform:translateX(30px)}
+}
+
+/* TELAS */
+.screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:24px;
+    text-align:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 2s ease;
+    z-index:2;
+}
+
+.screen.active{
+    opacity:1;
+    pointer-events:auto;
+}
+
+.text{
+    font-size:1.8rem;
+    line-height:1.5;
+    text-shadow:0 0 12px rgba(180,210,255,.4);
+}
+
+.small{
+    margin-top:14px;
+    font-size:.9rem;
+    opacity:.7;
+}
+
+/* BOTÕES */
+.buttons{
+    display:flex;
+    gap:24px;
+    margin-top:30px;
+}
+
+.button{
+    padding:14px 36px;
+    font-size:1.1rem;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.3);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    cursor:pointer;
+    backdrop-filter:blur(6px);
+    transition:.3s;
+}
+
+.button:hover{
+    background:rgba(180,210,255,.2);
+}
+
+/* BOTÃO NÃO */
+.flee{
+    position:relative;
+    transition:transform .35s ease;
+}
+
+/* LOADING */
+.progress{
+    width:80%;
+    height:3px;
+    background:rgba(255,255,255,.25);
+    margin-top:20px;
+}
+
+.progress span{
+    display:block;
+    height:100%;
+    width:0;
+    background:#fff;
+    animation:load 4s ease forwards;
+}
+
+@keyframes load{
+    to{width:88%}
+}
+
+/* CANVAS FX */
+canvas.effect{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- TELA 1 -->
+<div id="s1" class="screen active">
+    <div class="text">Carregando uma mensagem importante…</div>
+    <div class="progress"><span></span></div>
+    <div class="small">Por favor, não feche</div>
+</div>
+
+<!-- TELA 2 -->
+<div id="s2" class="screen">
+    <div class="text">Você sabe o quanto você é importante?</div>
+    <div class="buttons">
+        <button class="button" onclick="go(3)">Sim</button>
+        <button class="button" onclick="go(3)">Ainda vou descobrir</button>
+    </div>
+</div>
+
+<!-- TELA 3 -->
+<div id="s3" class="screen">
+    <div class="text">Então me responde com sinceridade…</div>
+    <div class="text" style="font-size:2.4rem;margin-top:20px">Fica comigo?</div>
+    <div class="buttons">
+        <button class="button" onclick="startPatrono()">SIM</button>
+        <button class="button flee" id="no">NÃO</button>
+    </div>
+    <div class="small" id="hint" style="display:none;margin-top:10px">
+        Não adianta… algumas escolhas já foram feitas 😉
+    </div>
+</div>
+
+<!-- TELA 4 -->
+<div id="s4" class="screen">
+    <canvas id="patrono" class="effect"></canvas>
+    <div class="text">
+        Se eu precisasse conjurar um Patrono,<br>
+        aquela noite na beliche seria a memória que eu usaria.
+    </div>
+</div>
+
+<!-- TELA 5 -->
+<div id="s5" class="screen">
+    <canvas id="celebrate" class="effect"></canvas>
+    <div class="text" id="t1" style="opacity:0">Feliz aniversário, Dayara ❤️</div>
+    <div class="text" id="t2" style="opacity:0;margin-top:14px">
+        Que o seu dia seja tão especial quanto você é pra mim.
+    </div>
+    <div class="text" id="t3" style="opacity:0;margin-top:14px">
+        Obrigado por ser a minha melhor magia.
+    </div>
+</div>
+
+<script>
+/* TROCA DE TELAS */
+const screens=document.querySelectorAll('.screen');
+function go(n){
+    screens.forEach(s=>s.classList.remove('active'));
+    document.getElementById('s'+n).classList.add('active');
+}
+setTimeout(()=>go(2),4000);
+
+/* BOTÃO NÃO */
+const no=document.getElementById('no');
+let tries=0;
+no.onclick=no.ontouchstart=()=>{
+    tries++;
+    no.style.transform=`translateX(${(Math.random()*120)-60}px)`;
+    if(tries>4)hint.style.display='block';
+};
+
+/* ESTRELAS */
+const star=document.getElementById('stars');
+const sx=star.getContext('2d');
+function resizeStars(){star.width=innerWidth;star.height=innerHeight}
+resizeStars();onresize=resizeStars;
+let stars=[...Array(120)].map(()=>({
+    x:Math.random()*star.width,
+    y:Math.random()*star.height,
+    r:Math.random()*1.5+.3
+}));
+function drawStars(){
+    sx.clearRect(0,0,star.width,star.height);
+    sx.fillStyle='#fff';
+    stars.forEach(s=>{
+        sx.globalAlpha=Math.random();
+        sx.beginPath();
+        sx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        sx.fill();
+    });
+    requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* PATRONO */
+const p=document.getElementById('patrono');
+const px=p.getContext('2d');
+function resizeP(){p.width=innerWidth;p.height=innerHeight}
+resizeP();
+let a=0;
+function patronoAnim(){
+    px.clearRect(0,0,p.width,p.height);
+    px.strokeStyle='rgba(170,210,255,.6)';
+    px.lineWidth=2;
+    px.beginPath();
+    for(let r=0;r<320;r+=5){
+        px.lineTo(
+            p.width/2+r*Math.cos(a+r*.08),
+            p.height/2+r*Math.sin(a+r*.08)
+        );
+    }
+    px.stroke();
+    a+=.01;
+    requestAnimationFrame(patronoAnim);
+}
+
+function startPatrono(){
+    go(4);
+    setTimeout(()=>{
+        patronoAnim();
+        setTimeout(()=>{
+            go(5);
+            celebrate();
+            finalText();
+        },6000);
+    },800);
+}
+
+/* FOGOS + CORAÇÕES */
+const c=document.getElementById('celebrate');
+const cx=c.getContext('2d');
+function resizeC(){c.width=innerWidth;c.height=innerHeight}
+resizeC();
+let parts=[];
+function celebrate(){
+    parts=[...Array(140)].map(()=>({
+        x:Math.random()*c.width,
+        y:c.height+Math.random()*200,
+        r:Math.random()*3+1,
+        s:Math.random()*2+1,
+        t:Math.random()<.5
+    }));
+    anim();
+}
+function anim(){
+    cx.clearRect(0,0,c.width,c.height);
+    parts.forEach(p=>{
+        p.y-=p.s;
+        cx.fillStyle=p.t?'rgba(255,120,180,.7)':'rgba(255,255,255,.8)';
+        cx.beginPath();
+        cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        cx.fill();
+    });
+    requestAnimationFrame(anim);
+}
+
+function finalText(){
+    setTimeout(()=>t1.style.opacity=1,1000);
+    setTimeout(()=>t2.style.opacity=1,3000);
+    setTimeout(()=>t3.style.opacity=1,5000);
+}
+</script>
+
+</body>
+</html>
